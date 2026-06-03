@@ -4,7 +4,6 @@
     <title>AI Chatbot</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
             background: #0a0f1e;
             color: #ffffff;
@@ -14,44 +13,35 @@
             align-items: center;
             height: 100vh;
         }
-
         .container {
             width: 600px;
-            height: 85vh;
+            height: 90vh;
             background: #0d1526;
             border-radius: 16px;
             border: 1px solid #00c8ff33;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            position: relative;
         }
-
         .header {
-            padding: 20px;
+            padding: 16px 20px;
             border-bottom: 1px solid #00c8ff33;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-
-        .header h2 {
-            color: #00c8ff;
-            font-size: 1.2rem;
-        }
-
+        .header h2 { color: #00c8ff; font-size: 1.2rem; }
         .dot {
-            width: 10px;
-            height: 10px;
+            width: 10px; height: 10px;
             background: #00c8ff;
             border-radius: 50%;
             animation: pulse 1.5s infinite;
         }
-
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.3; }
         }
-
         #chatbox {
             flex: 1;
             overflow-y: auto;
@@ -60,10 +50,8 @@
             flex-direction: column;
             gap: 12px;
         }
-
         #chatbox::-webkit-scrollbar { width: 4px; }
         #chatbox::-webkit-scrollbar-thumb { background: #00c8ff44; border-radius: 4px; }
-
         .message {
             max-width: 80%;
             padding: 12px 16px;
@@ -71,7 +59,6 @@
             font-size: 0.9rem;
             line-height: 1.5;
         }
-
         .user-msg {
             background: #00c8ff22;
             border: 1px solid #00c8ff44;
@@ -79,7 +66,6 @@
             align-self: flex-end;
             border-bottom-right-radius: 4px;
         }
-
         .ai-msg {
             background: #ffffff0f;
             border: 1px solid #ffffff15;
@@ -87,15 +73,14 @@
             align-self: flex-start;
             border-bottom-left-radius: 4px;
         }
-
+        .typing { color: #00c8ff88; font-size: 0.8rem; padding: 0 20px; }
         .input-area {
             padding: 16px;
             border-top: 1px solid #00c8ff22;
             display: flex;
             gap: 10px;
         }
-
-        input {
+        input[type="text"] {
             flex: 1;
             background: #ffffff0f;
             border: 1px solid #00c8ff33;
@@ -105,11 +90,9 @@
             font-size: 0.9rem;
             outline: none;
         }
-
-        input:focus { border-color: #00c8ff; }
-        input::placeholder { color: #ffffff44; }
-
-        button {
+        input[type="text"]:focus { border-color: #00c8ff; }
+        input[type="text"]::placeholder { color: #ffffff44; }
+        .send-btn {
             background: #00c8ff;
             color: #0a0f1e;
             border: none;
@@ -120,13 +103,64 @@
             font-size: 0.9rem;
             transition: opacity 0.2s;
         }
+        .send-btn:hover { opacity: 0.85; }
 
-        button:hover { opacity: 0.85; }
-
-        .typing {
+        /* FAB */
+        .fab-container {
+            position: absolute;
+            right: 16px;
+            bottom: 75px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            z-index: 10;
+        }
+        .fab-btn {
+            width: 46px;
+            height: 46px;
+            background: #00c8ff;
+            color: #0a0f1e;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 15px #00c8ff44;
+            transition: transform 0.2s;
+            line-height: 46px;
+            text-align: center;
+        }
+        .fab-btn:hover { transform: scale(1.1); }
+        .fab-menu {
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-end;
+        }
+        .fab-menu.open { display: flex; }
+        .fab-option {
+            background: #0d1526;
+            border: 1px solid #00c8ff44;
+            border-radius: 8px;
+            padding: 8px 14px;
+            color: #00c8ff;
+            cursor: pointer;
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+        .fab-option:hover { background: #00c8ff22; }
+        .fab-option.clear {
+            color: #ff6666;
+            border-color: #ff444444;
+            background: transparent;
+        }
+        .fab-option.clear:hover { background: #ff444422; }
+        input[type="file"] { display: none; }
+        #pdf-status {
+            font-size: 0.75rem;
             color: #00c8ff88;
-            font-size: 0.8rem;
-            padding: 0 20px;
+            text-align: right;
         }
     </style>
 </head>
@@ -134,19 +168,52 @@
     <div class="container">
         <div class="header">
             <div class="dot"></div>
-            <h2>🤖Hello, I'm Baymax </h2>
+            <h2>🤖 Hello, I'm Baymax</h2>
         </div>
 
         <div id="chatbox"></div>
         <div class="typing" id="typing"></div>
 
+        <!-- FAB -->
+        <div class="fab-container">
+            <div class="fab-menu" id="fabMenu">
+                <span id="pdf-status">No PDF uploaded</span>
+                <label class="fab-option" for="pdfInput">📂 Upload PDF</label>
+                <input type="file" id="pdfInput" accept=".pdf" onchange="uploadPDF()">
+                <button class="fab-option clear" onclick="clearPDF()">✕ Clear PDF</button>
+            </div>
+            <button class="fab-btn" onclick="toggleMenu()">+</button>
+        </div>
+
         <div class="input-area">
             <input type="text" id="userInput" placeholder="Type a message...">
-            <button onclick="sendMessage()">Send ➤</button>
+            <button class="send-btn" onclick="sendMessage()">Send ➤</button>
         </div>
     </div>
 
     <script>
+        function toggleMenu() {
+            const menu = document.getElementById("fabMenu");
+            menu.classList.toggle("open");
+        }
+
+        async function uploadPDF() {
+            const file = document.getElementById("pdfInput").files[0];
+            if (!file) return;
+            document.getElementById("pdf-status").textContent = "Uploading...";
+            const formData = new FormData();
+            formData.append("pdf", file);
+            const response = await fetch("/upload", { method: "POST", body: formData });
+            const data = await response.json();
+            document.getElementById("pdf-status").textContent = data.message;
+        }
+
+        async function clearPDF() {
+            await fetch("/clear", { method: "POST" });
+            document.getElementById("pdf-status").textContent = "No PDF uploaded";
+            document.getElementById("pdfInput").value = "";
+        }
+
         async function sendMessage() {
             const input = document.getElementById("userInput");
             const chatbox = document.getElementById("chatbox");
